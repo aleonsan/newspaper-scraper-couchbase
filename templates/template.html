@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Couchbase frontend summary</title>
+    
+        <script src="http://code.jquery.com/jquery-latest.js"></script>
+        <script src="https://github.com/chartjs/Chart.js/releases/download/v2.3.0/Chart.min.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="css/template.css">
+    </head>
+    <body>
+        <script>
+           var scraper_container = $("#scrapersummary-container");
+           var couchbase_container = $("#couchbasesummary-container");
+
+
+           $(function() {
+
+               $(document).on({
+                   ajaxStart: function() { 
+                       scraper_container.css({
+                           "background": "url(img/loading.gif)",
+                           "position": "relative",
+                           "z-index": "99999",
+                           "pointer-events": "all"});
+                       couchbase_container.css({
+                           "background": "url(img/loading.gif)",
+                           "position": "relative",
+                           "z-index": "99999",
+                           "pointer-events": "all"});    
+                   },
+                   ajaxStop: function() { 
+                       scraper_container.css({"background": "transparent"});
+                       couchbase_container.css({"background": "transparent"});    
+                   }
+                }); 
+
+                var update_scraper = function update_scraper_summary(){ 
+                    $.getJSON("/scraper_summary",
+                        function(data){
+                            var total_sites = $("#scrapersummary-data-total-sites");
+                            var last_site = $("#scrapersummary-data-last-site");
+                            var last_term = $("#scrapersummary-data-last-term");
+                            
+                            if(!data){
+                                data = {"scraped_num": 0, "last_site": "-", "last_site_url": "", "last_term": "-"};
+                            }
+                            total_sites.html(data["scraped_num"]);
+                            last_site.html(data["last_site"]);
+                            last_site.attr('href', data["last_site_url"]);
+                            last_term.html(data["last_term"]);
+                        });
+                    };
+                var update_couchbase = function update_couchbase_summary(){ 
+                    $.getJSON("/couchbase_summary",
+                        function(data){
+                            var documents_num = $("#couchbasesummary-data-documents");
+                            var last_document = $("#couchbasesummary-data-last-document");
+                            var strongest_relation = $("#couchbasesummary-data-strongest-rel");
+
+                            var ld = data['last_document'] || '-'; 
+                            var srt = data['strongest_rel_terms'] || '-'; 
+
+                            documents_num.html(data["documents_num"]);
+                            last_document.html(ld);
+                            strongest_relation.html(srt);
+                        });
+                    };
+                update_couchbase();
+                update_scraper();
+                setInterval(update_couchbase, 5000);
+                setInterval(update_scraper, 5000);
+            });
+       </script>
+
+        <header></header>
+        <div id="scrapersummary-container">
+            <ul id="scrapersummary-data">
+                <li><div>Total sites crawled</div><span id="scrapersummary-data-total-sites"></span></li>
+                <li><div>Last site visited</div><a id="scrapersummary-data-last-site" href="" target="_blank"></a></li>
+                <li><div>Last term crawled</div><span id="scrapersummary-data-last-term"></span></li>
+            </ul>
+            <div id="scrapersummary-charts">
+                <canvas id="" width="100" height="100"></canvas>
+            </div>
+        </div>
+        <div id="couchbasesummary-container">
+            <ul id="couchbasesummary-data">
+                <li><div>Documents in bucket</div><span id="couchbasesummary-data-documents"></span></li>
+                <li><div>Last document inserted</div><span id="couchbasesummary-data-last-document"></span></li>
+                <li><div>Strongest term relation</div><span id="couchbasesummary-data-strongest-rel"></span></li>
+            </ul>
+            <div id="couchbasesummary-charts">
+                <canvas id="" width="100" height="100"></canvas>
+            </div>
+        </div>
+        <footer></footer>
+    </body>
+</html>
