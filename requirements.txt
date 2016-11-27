@@ -2,7 +2,7 @@ attrs==16.2.0
 cffi==1.8.3
 click==6.6
 constantly==15.1.0
-couchbase==2.1.2.dev3+g220de5e
+git+git://github.com/couchbase/couchbase-python-client
 cryptography==1.5.3
 cssselect==1.0.0
 decorator==4.0.10
